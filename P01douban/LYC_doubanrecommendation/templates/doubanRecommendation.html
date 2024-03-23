@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html language="zh-cn">
+  <head>
+    <link href="/static/css/style.css" rel="stylesheet" type="text/css" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>豆瓣电影数据列表</title>
+  </head>
+  <body>
+    <h1>豆瓣电影</h1>
+    {% for movie in movie_list%}
+    <p>{{ movie.title }}</p>
+    {% endfor %}
+  </body>
+</html>
