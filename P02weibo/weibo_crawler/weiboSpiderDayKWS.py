@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
-import time
 import datetime
+import io
 import re
+import time
+
+import requests
+import xlwt
+from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-import xlwt
-import requests
-from PIL import Image
-import io
-from .config import *
+
+from weibo_crawler.config import *
+
 # 先调用无界面浏览器Chrome
 # driver = webdriver.Chrome()
 # 下载chrome：https://www.google.cn/intl/zh-CN/chrome/
@@ -25,27 +27,6 @@ driver = webdriver.Chrome()
 #                     这是一种很好的登陆方式，有可能有输入验证码
 #                          登陆之后即可以登陆方式打开网页
 # ********************************************************************************
-
-class LoginManager():
-    def __init__(self, login_website):
-        self.login_website=login_website
-        self.browser = webdriver.Chrome()
-        
-    def __former_click(self, feature_dict: dict):
-        former=feature_dict.get(FORMER)
-        if(former):
-            
-            
-        raise NotImplementedError()
-
-    def __try_login_method(self, login_method_index, use_qrcode=False):
-        self.
-        
-        pass
-
-    def login(self,use_qrcode=False):
-        self.__try_login_method(0,use_qrcode)
-        
 
 def LoginWeibo(username, password):
     try:
@@ -156,6 +137,7 @@ def GetSearchContent(key):
         start_stamp = end_stamp
         end_stamp = end_stamp + delta_date
     input("等待下一步")
+
 
 # time.sleep(1)
 
@@ -306,7 +288,8 @@ def getContent():
 
         try:
             WBDR = nodes[i].find_element(
-                "xpath", ".//div[@class='feed_content wbcon']/a[@class='ico_club']").get_attribute('title')  # 若非达人则不存在节点
+                "xpath", ".//div[@class='feed_content wbcon']/a[@class='ico_club']").get_attribute(
+                'title')  # 若非达人则不存在节点
         except:
             WBDR = ''
         print('微博达人:', WBDR)
@@ -422,8 +405,8 @@ def getContent():
 # *******************************************************************************
 if __name__ == '__main__':
     # 定义变量
-    username = '15507041215'  # 输入你的用户名
-    password = 'liyc20021215'  # 输入你的密码
+    username = ""  # 输入你的用户名
+    password = ""  # 输入你的密码
 
     # 操作函数
     LoginWeibo(username, password)  # 登陆微博
