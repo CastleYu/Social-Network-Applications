@@ -36,6 +36,21 @@ LOGIN_METHOD = [
         }
     },
     {
-        URL: "https://my.sina.com.cn/profile/unlogin/"
+        URL: "https://my.sina.com.cn/profile/unlogin/",
+        PRECONDITION: [
+            {
+                By.CLASS_NAME: 'hd_login',
+            },
+        ],
+        LOGIN_NAME: {
+
+        }
     }
 ]
+
+
+BROWSER_USER_PROFILE_PATH_F = {
+    "chrome": "C:\\Users\\{}\\AppData\\Local\\Google\\Chrome\\User Data"
+
+}
+

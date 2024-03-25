@@ -4,23 +4,20 @@ import io
 import re
 import time
 
+import cv2
 import requests
 import xlwt
+import numpy as np
 from PIL import Image
 from selenium import webdriver
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 
+from weibo_crawler.browser import ChromeBrowser
 from weibo_crawler.config import *
 
-# 先调用无界面浏览器Chrome
-# driver = webdriver.Chrome()
-# 下载chrome：https://www.google.cn/intl/zh-CN/chrome/
-# 要使用Chrome浏览器，必须得有chromedriver
-# 并且需要设置环境变量PATH
-# 参考：https://www.cnblogs.com/lfri/p/10542797.html
-# 如89.0.4389.90版本的chrome对应下载89.0.4389.23即可
-driver = webdriver.Chrome()
-
+browser = ChromeBrowser("test")
+browser.start()
 
 # ********************************************************************************
 #                            第一步: 登陆login.sina.com
@@ -28,54 +25,61 @@ driver = webdriver.Chrome()
 #                          登陆之后即可以登陆方式打开网页
 # ********************************************************************************
 
-def LoginWeibo(username, password):
+
+
+
+# def try_find_element(driver: webdriver.Chrome, feature_dict:dict):
+
+
+def login_weibo(username, password):
+    # try:
+    # 输入用户名/密码登录
+    print('准备登陆Weibo.cn网站...')
+    method = LOGIN_METHOD[0]
+    url = method.get(URL)
+    driver.get(url)
+    __preconditional_click(driver, method)
+    # driver.find_element(By.CLASS_NAME, "hd_login").click()
+    # input()
+    # elem_user = driver.find_element(By.NAME, "loginname")
+    # elem_user.send_keys(username)  # 用户名
+    # elem_pwd = driver.find_element("xpath","/html/body/div[1]/div/div/div[2]/div[2]/form/div[2]/input")
+    # elem_pwd.send_keys(password)  # 密码
+    # elem_sub = driver.find_element("xpath","/html/body/div[1]/div/div/div[2]/div[2]/button")
+    # elem_sub.click()  # 点击登陆 因无name属性
+    # 扫码登录
     try:
-        # 输入用户名/密码登录
-        print('准备登陆Weibo.cn网站...')
-
-        driver.get("https://my.sina.com.cn/")
-        driver.find_element(By.CLASS_NAME, "hd_login").click()
-        input()
-        elem_user = driver.find_element(By.NAME, "loginname")
-
-        elem_user.send_keys(username)  # 用户名
-        # elem_pwd = driver.find_element("xpath","/html/body/div[1]/div/div/div[2]/div[2]/form/div[2]/input")
-        # elem_pwd.send_keys(password)  # 密码
-        # elem_sub = driver.find_element("xpath","/html/body/div[1]/div/div/div[2]/div[2]/button")
-        # elem_sub.click()  # 点击登陆 因无name属性
-        input()
-        # 扫码登录
+        __preconditional_click(driver, method.get(QRCODE))
         elem_qrcode = driver.find_element(
-            By.XPATH, '//*[@id="app"]/div/div/div[2]/div[1]/div[2]/div/img')
-        image_url = elem_qrcode.get_attribute('src')
-        response = requests.get(image_url)
-        image = Image.open(io.BytesIO(response.content))
-        width, height = 400, 300
-        image.thumbnail((width, height))
-        image.show()
+            By.XPATH, '//*[@id="pl_login_form"]/div/div[2]/img')
+    except NoSuchElementException:
+        input("element is not found")
+        exit(1)
+    image_url = elem_qrcode.get_attribute('src')
+    response = requests.get(image_url)
+    # 将响应的内容转换为一个NumPy数组
+    image_array = np.asarray(bytearray(response.content), dtype=np.uint8)
+    # 从NumPy数组解码图像数据
+    img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+    # 显示图片
+    cv2.imshow('Image', img)
+    cv2.waitKey(0)  # 等待按键事件
+    cv2.destroyAllWindows()  # 关闭显示窗口
 
-        try:
-            # 输入验证码
-            time.sleep(10)
-            # elem_sub.click()
-        except:
-            # 不用输入验证码
-            pass
+    # 获取Coockie 推荐资料：http://www.cnblogs.com/fnng/p/3269450.html
+    print('Crawl in ', driver.current_url)
+    print('输出Cookie键值对信息:')
+    for cookie in driver.get_cookies():
+        print(cookie)
+        for key in cookie:
+            print(key, cookie[key])
+    print('登陆成功...')
+    # except Exception as e:
+    #     print("Error: ", e)
+    # finally:
 
-        # 获取Coockie 推荐资料：http://www.cnblogs.com/fnng/p/3269450.html
-        print('Crawl in ', driver.current_url)
-        print('输出Cookie键值对信息:')
-        for cookie in driver.get_cookies():
-            print(cookie)
-            for key in cookie:
-                print(key, cookie[key])
-        print('登陆成功...')
-        input()
-    except Exception as e:
-        print("Error: ", e)
 
-    finally:
-        print('End LoginWeibo!\n')
+print('End LoginWeibo!\n')
 
 
 # ********************************************************************************
@@ -84,7 +88,7 @@ def LoginWeibo(username, password):
 #                     考虑没有搜索结果、翻页效果的情况
 # ********************************************************************************
 
-def GetSearchContent(key):
+def get_search_content(key):
     driver.get("http://s.weibo.com/")
     print('搜索热点主题：')
 
@@ -125,14 +129,14 @@ def GetSearchContent(key):
 
         # 每一天使用一个sheet存储数据
         sheet = outfile.add_sheet(start_stamp.strftime("%Y-%m-%d-%H"))
-        initXLS()
+        init_xls()
 
         # 通过构建URL实现每一天的查询
         url = current_url + '&typeall=1&suball=1&timescope=custom:' + start_stamp.strftime(
             "%Y-%m-%d-%H") + ':' + end_stamp.strftime("%Y-%m-%d-%H") + '&Refer=g'
         driver.get(url)
 
-        handlePage()  # 处理当前页面内容
+        handle_page()  # 处理当前页面内容
 
         start_stamp = end_stamp
         end_stamp = end_stamp + delta_date
@@ -148,17 +152,17 @@ def GetSearchContent(key):
 # 页面加载完成后，对页面内容进行处理
 
 
-def handlePage():
+def handle_page():
     while True:
         # 之前认为可能需要sleep等待页面加载，后来发现程序执行会等待页面加载完毕
         # sleep的原因是对付微博的反爬虫机制，抓取太快可能会判定为机器人，需要输入验证码
         time.sleep(1)
         # 先行判定是否有内容
-        if checkContent():
+        if check_content():
             print("getContent")
-            getContent()
+            get_content()
             # 先行判定是否有下一页按钮
-            if checkNext():
+            if check_next():
                 input("拿到下一页按钮")
                 next_page_btn = driver.find_element(
                     "css_selector", "#pl_feedlist_index > div.m-page > div > a.next")
@@ -172,7 +176,7 @@ def handlePage():
 
 
 # 判断页面加载完成后是否有内容
-def checkContent():
+def check_content():
     # 有内容的前提是有“导航条”？错！只有一页内容的也没有导航条
     # 但没有内容的前提是有“pl_noresult”
     try:
@@ -185,7 +189,7 @@ def checkContent():
 
 
 # 判断是否有下一页按钮
-def checkNext():
+def check_next():
     try:
         driver.find_element(
             "css_selector", "#pl_feedlist_index > div.m-page > div > a.next")
@@ -207,7 +211,7 @@ def checkqw():
 
 
 # 在添加每一个sheet之后，初始化字段
-def initXLS():
+def init_xls():
     name = ['博主昵称', '博主主页', '微博认证', '微博达人', '微博内容',
             '发布位置', '发布时间', '微博地址', '微博来源', '转发', '评论', '赞']
 
@@ -223,7 +227,7 @@ def initXLS():
 
 
 # 将dic中的内容写入excel
-def writeXLS(dic):
+def write_xls(dic):
     global row
     global outfile
     global sheet
@@ -236,7 +240,7 @@ def writeXLS(dic):
 
 
 # 在页面有内容的前提下，获取内容
-def getContent():
+def get_content():
     # 寻找到每一条微博的class
     try:
         nodes = driver.find_element(
@@ -249,7 +253,7 @@ def getContent():
         input("请在微博页面输入验证码！")
         url = driver.current_url
         driver.get(url)
-        getContent()
+        get_content()
         return
 
     dic = {}
@@ -397,7 +401,7 @@ def getContent():
         print('\n')
 
     # 写入Excel
-    writeXLS(dic)
+    write_xls(dic)
 
 
 # *******************************************************************************
@@ -409,11 +413,11 @@ if __name__ == '__main__':
     password = ""  # 输入你的密码
 
     # 操作函数
-    LoginWeibo(username, password)  # 登陆微博
+    login_weibo(username, password)  # 登陆微博
     # 搜索热点微博爬取评论
     # 关键词请根据实际需要进行替换
     # 请搜索和疫情有关的一些非敏感关键词
     # 注意：如果输入的是“疫情”“武汉”“中国”这样的敏感词汇，微博不会返回给你任何结果
     # 请尽量输入疫情相关又不会敏感的词汇，可以输入一些疫情支援人员的姓名试试看
     key = '#赵丽颖#'
-    GetSearchContent(key)
+    get_search_content(key)
