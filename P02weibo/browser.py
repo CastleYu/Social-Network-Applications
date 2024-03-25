@@ -1,7 +1,6 @@
 import os
 
 from selenium import webdriver
-from selenium.common import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
 
@@ -29,7 +28,12 @@ class Browser:
 
     def get_cookies(self):
         if self.driver:
-            return self.driver.get_cookies()
+            return {cookie['name']: cookie['value'] for cookie in self.driver.get_cookies()}
+        return None
+
+    def get_cookie_by_name(self, name):
+        if self.driver:
+            return self.get_cookies().get(name, None)
         return None
 
     def maximize_window(self):
@@ -83,32 +87,3 @@ class ChromeBrowser(Browser):
                 self.driver = webdriver.Chrome(options=self.__config_chrome_options())
             except Exception as e:
                 print("Error starting the Chrome WebDriver:", e)
-
-
-class WeiboCrawler(ChromeBrowser):
-    def __init__(self, profile='test'):
-        super().__init__(profile)
-
-    def preconditional_click(self, feature_dict: dict):
-        key = feature_dict.get(PRECONDITION)
-        if key is not None:
-            for by, value in feature_dict.items():
-                try:
-                    elem = self.driver.find_element(by, value)
-                    try:
-                        elem.click()
-                        return True
-                    except Exception as e:
-                        print(e)
-                        return False
-                except NoSuchElementException:
-                    continue
-        else:
-            return True
-        raise KeyError("There is a preconditional click, but no element founded")
-
-    def find_elemnet_by_dict(self):
-
-        self.driver.find_element()
-
-        pass
