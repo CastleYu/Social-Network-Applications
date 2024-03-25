@@ -18,7 +18,7 @@ from weibo_crawler.config import *
 
 browser = ChromeBrowser("test")
 browser.start()
-
+exit(0)
 # ********************************************************************************
 #                            第一步: 登陆login.sina.com
 #                     这是一种很好的登陆方式，有可能有输入验证码
