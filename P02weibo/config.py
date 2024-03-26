@@ -9,7 +9,7 @@ LOGIN_BUTTON = 'login_button'
 QRCODE = 'qr_code'
 PRECONDITION = "precondition_click"
 
-LOGIN_METHOD = [
+LOGIN_METHODS = [
     {
         URL: "https://weibo.com/login.php",
         LOGIN_NAME: {

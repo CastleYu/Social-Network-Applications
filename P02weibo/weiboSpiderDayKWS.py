@@ -1,31 +1,26 @@
 # -*- coding: utf-8 -*-
 import datetime
-import io
 import re
 import time
 
 import cv2
+import numpy as np
 import requests
 import xlwt
-import numpy as np
-from PIL import Image
-from selenium import webdriver
 from selenium.common import NoSuchElementException
+from selenium.webdriver import Chrome
 from selenium.webdriver.common.keys import Keys
 
-from weibo_crawler.browser import ChromeBrowser
-from weibo_crawler.config import *
+from config import *
 
-browser = ChromeBrowser("test")
-browser.start()
-exit(0)
+driver = Chrome()
+
+
 # ********************************************************************************
 #                            第一步: 登陆login.sina.com
 #                     这是一种很好的登陆方式，有可能有输入验证码
 #                          登陆之后即可以登陆方式打开网页
 # ********************************************************************************
-
-
 
 
 # def try_find_element(driver: webdriver.Chrome, feature_dict:dict):
@@ -35,12 +30,13 @@ def login_weibo(username, password):
     # try:
     # 输入用户名/密码登录
     print('准备登陆Weibo.cn网站...')
-    method = LOGIN_METHOD[0]
+    method = LOGIN_METHODS[0]
     url = method.get(URL)
     driver.get(url)
-    __preconditional_click(driver, method)
+    time.sleep(3)
+    pre_button = driver.find_element(By.XPATH, '//*[@id="pl_login_form"]/div/div[1]/div/a[2]')
+    pre_button.click()
     # driver.find_element(By.CLASS_NAME, "hd_login").click()
-    # input()
     # elem_user = driver.find_element(By.NAME, "loginname")
     # elem_user.send_keys(username)  # 用户名
     # elem_pwd = driver.find_element("xpath","/html/body/div[1]/div/div/div[2]/div[2]/form/div[2]/input")
@@ -48,14 +44,15 @@ def login_weibo(username, password):
     # elem_sub = driver.find_element("xpath","/html/body/div[1]/div/div/div[2]/div[2]/button")
     # elem_sub.click()  # 点击登陆 因无name属性
     # 扫码登录
+    elem_qrcode = None
     try:
-        __preconditional_click(driver, method.get(QRCODE))
         elem_qrcode = driver.find_element(
             By.XPATH, '//*[@id="pl_login_form"]/div/div[2]/img')
     except NoSuchElementException:
         input("element is not found")
-        exit(1)
+    time.sleep(3)
     image_url = elem_qrcode.get_attribute('src')
+    print(image_url)
     response = requests.get(image_url)
     # 将响应的内容转换为一个NumPy数组
     image_array = np.asarray(bytearray(response.content), dtype=np.uint8)
@@ -76,10 +73,9 @@ def login_weibo(username, password):
     print('登陆成功...')
     # except Exception as e:
     #     print("Error: ", e)
+    #     input("发生错误，等待下一步")
     # finally:
-
-
-print('End LoginWeibo!\n')
+    print('End LoginWeibo!\n')
 
 
 # ********************************************************************************
@@ -99,8 +95,7 @@ def get_search_content(key):
     item_inp.send_keys(key)
     item_inp.send_keys(Keys.RETURN)  # 采用点击回车直接搜索
 
-    time.sleep(5)
-    input('等待下一步')
+    time.sleep(2)
     # 获取搜索词的URL，用于后期按时间查询的URL拼接
     current_url = driver.current_url
     # http://s.weibo.com/weibo/%25E7%258E%2589%25E6%25A0%2591%25E5%259C%25B0%25E9%259C%2587
@@ -109,7 +104,6 @@ def get_search_content(key):
     global start_stamp
     global page
 
-    input('等待下一步')
     # 需要抓取的开始和结束日期，可根据你的实际需要调整时间
     start_date = datetime.datetime(2021, 2, 10)
     end_date = datetime.datetime(2021, 3, 10)
@@ -140,7 +134,6 @@ def get_search_content(key):
 
         start_stamp = end_stamp
         end_stamp = end_stamp + delta_date
-    input("等待下一步")
 
 
 # time.sleep(1)
@@ -165,7 +158,7 @@ def handle_page():
             if check_next():
                 input("拿到下一页按钮")
                 next_page_btn = driver.find_element(
-                    "css_selector", "#pl_feedlist_index > div.m-page > div > a.next")
+                    "css_selector", ".next")
                 next_page_btn.click()
             else:
                 print("no Next")
@@ -239,36 +232,45 @@ def write_xls(dic):
     outfile.save("./微博数据.xls")
 
 
-# 在页面有内容的前提下，获取内容
+page = 1
+
+
+# 在页面有内容的前
+# 提下，获取内容
 def get_content():
     # 寻找到每一条微博的class
+    nodes = None
     try:
-        nodes = driver.find_element(
-            "xpath", "//div[@class='card-wrap']/div[@class='card']")
+        nodes = driver.find_elements(
+            "xpath", '/html/body/div[1]/div[2]/div/div[2]/div[1]/div[2]')
     except Exception as e:
         print(e)
-
-    # 在运行过程中微博数==0的情况，可能是微博反爬机制，需要输入验证码
-    if len(nodes) == 0:
-        input("请在微博页面输入验证码！")
-        url = driver.current_url
-        driver.get(url)
-        get_content()
-        return
-
+    try:
+        # 在运行过程中微博数==0的情况，可能是微博反爬机制，需要输入验证码
+        if len(nodes) == 0:
+            input("请在微博页面输入验证码！")
+            url = driver.current_url
+            driver.get(url)
+            get_content()
+            return
+    except TypeError as e:
+        print(e)
+        print(nodes)
     dic = {}
-
+    print(len(nodes))
     global page
     print(start_stamp.strftime("%Y-%m-%d-%H"))
     print('页数:', page)
-    page = page + 1
+    page += 1
     print('微博数量', len(nodes))
 
     for i in range(len(nodes)):
         dic[i] = []
         try:
             BZNC = nodes[i].find_element(
-                "xpath", ".//div[@class='content']/p[@class='txt']").get_attribute("nick-name")
+                "xpath",
+                '//*[@id="pl_feedlist_index"]/div[2]/div[2]/div[2]/div[1]/div[2]/div[1]/div[2]/a').get_attribute(
+                "nick-name")
         except:
             BZNC = ''
         print('博主昵称:', BZNC)
@@ -276,7 +278,7 @@ def get_content():
 
         try:
             BZZY = nodes[i].find_element(
-                "xpath", ".//div[@class='content']/div[@class='info']/div[2]/a").get_attribute("href")
+                "xpath", '//*[@id="pl_feedlist_index"]/div[2]/div[2]/div[2]/div[1]/div[1]/a').get_attribute("href")
         except:
             BZZY = ''
         print('博主主页:', BZZY)
@@ -284,7 +286,8 @@ def get_content():
         # 微博官方认证，没有爬取
         try:
             WBRZ = nodes[i].find_element(
-                "xpath", ".//div[@class='info']/div/a[contains(@title,'微博')]").get_attribute('title')  # 若没有认证则不存在节点
+                "xpath", '//*[@id="pl_feedlist_index"]/div[2]/div[2]/div[2]/div[1]/div[1]/a/span').get_attribute(
+                'title')  # 若没有认证则不存在节点
         except:
             WBRZ = ''
         print('微博认证:', WBRZ)
@@ -302,15 +305,16 @@ def get_content():
         # 判断展开全文和网页链接是否存在
         try:
             nodes[i].find_element(
-                "xpath", ".//div[@class='content']/p[@class='txt']/a[@action-type='fl_unfold']").is_displayed()
+                "xpath", '//*[@id="pl_feedlist_index"]/div[2]/div[13]/div/div[1]/div[2]/p[1]/a[9]').is_displayed()
             flag = True
         except:
             flag = False
         # 获取微博内容
+        FBWZ = ''
         try:
             if flag:
                 nodes[i].find_element(
-                    "xpath", ".//div[@class='content']/p[@class='txt']/a[@action-type='fl_unfold']").click()
+                    "xpath", '//*[@id="pl_feedlist_index"]/div[2]/div[13]/div/div[1]/div[2]/p[1]/a[9]').click()
                 time.sleep(1)
                 WBNR = nodes[i].find_element(
                     "xpath", ".//div[@class='content']/p[2]").text.replace("\n", "")
@@ -325,7 +329,7 @@ def get_content():
                 try:
                     if flag:
                         pattern = nodes[i].find_element(
-                            "xpath", ".//div[@class='content']/p[2]/a[i[@class='wbicon']]")
+                            "xpath", '//*[@id="pl_feedlist_index"]/div[2]/div[13]/div/div[1]/div[2]/div[2]/a[2]')
                         if isinstance(pattern, list):
                             text = [p.text for p in pattern]
                             FBWZ = [loc for loc in [re.findall(
@@ -339,7 +343,8 @@ def get_content():
                     FBWZ = ''
             else:
                 WBNR = nodes[i].find_element(
-                    "xpath", ".//div[@class='content']/p[@class='txt']").text.replace("\n", "")
+                    "xpath", '//*[@id="pl_feedlist_index"]/div[2]/div[13]/div/div[1]/div[2]/div[2]/a[2]').text.replace(
+                    "\n", "")
                 # 判断发布位置是否存在
                 try:
                     nodes[i].find_element(
@@ -389,7 +394,7 @@ def get_content():
 
         try:
             ZF_TEXT = nodes[i].find_element(
-                "xpath", ".//a[@action-type='feed_list_forward']").text
+                "xpath", '//*[@id="pl_feedlist_index"]/div[2]/div[2]/div[2]/div[2]/ul/li[1]/a').text
             if ZF_TEXT == '转发':
                 ZF = 0
             else:
