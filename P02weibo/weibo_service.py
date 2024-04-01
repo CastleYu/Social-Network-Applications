@@ -11,7 +11,7 @@ class WeiboService(ChromeBrowser):
     def __init__(self, profile='test'):
         super().__init__(profile)
 
-    def preconditional_click(self, precondition_list: list):
+    def precondition_click(self, precondition_list: list):
         """前置条件点击"""
         for feature_dict in precondition_list:
             for by, value in feature_dict.items():
@@ -22,24 +22,24 @@ class WeiboService(ChromeBrowser):
                         return True
                     except Exception as e:
                         print(e)
-                        print("When processing preconditional click:")
+                        print("When processing precondition click:")
                         print("\tElement founded, but error occurred when trying to click")
-                        if input('Press Enter to Finish Preconditional Click') == '':
+                        if input('Press Enter to Finish Precondition Click') == '':
                             return False
                         else:
                             continue
                 except NoSuchElementException:
                     continue
         else:
-            raise KeyError("There is a preconditional click, but no element founded")
+            raise KeyError("There is a precondition click, but no element founded")
 
-    def find_elemnet_by_dict(self, feature_dict: dict):
-        # 处理前置条件点击，并且记录Flag-是否处理
+    def find_element_by_dict(self, feature_dict: dict):
+        # 处理前置条件点击，并且记录Flag-是否处理预点击队列
         precondition = feature_dict.pop(PRECONDITION, None)
         if precondition:
-            prec_did = self.preconditional_click(precondition)
+            pre_did = self.precondition_click(precondition)
         else:
-            prec_did = True
+            pre_did = True
 
         # 遍历寻找可用的键值对来寻找元素
         for by, value in feature_dict.items():
@@ -49,10 +49,10 @@ class WeiboService(ChromeBrowser):
             except NoSuchElementException:
                 continue
         else:  # 未寻得报错
-            if prec_did:
+            if pre_did:
                 raise KeyError("No element founded")
             else:
-                raise KeyError("No element founded, and no preconditional click")
+                raise KeyError("No element founded, and no precondition click")
 
     # def monitor_page_change(self, initial_url='', to_be_url=''):
     #     if initial_url and to_be_url:
@@ -73,7 +73,7 @@ class WeiboService(ChromeBrowser):
         WebDriverWait(self.driver, 5).until(EC.url_contains("weibo.com/login"))
         if use_qr_code:
             feature_dict = method.get(QRCODE)
-            element = self.find_elemnet_by_dict(feature_dict)
+            element = self.find_element_by_dict(feature_dict)
             WebDriverWait(self.driver, 10).until(lambda driver: element.get_attribute('src') != 'about:blank;',
                                                  f"[超时]等待元素属性")
             img_url = element.get_attribute('src')

@@ -2,12 +2,17 @@ from selenium.webdriver.common.by import By
 
 DOC = "微博登录方法"
 
+# MAP, 映射变量名与字符串
 URL = "url"
 LOGIN_NAME = 'login_name'
 PWD = 'password'
 LOGIN_BUTTON = 'login_button'
 QRCODE = 'qr_code'
 PRECONDITION = "precondition_click"
+
+# 登录方法(list)，格式为：每项{URL+NAME:{BY:VALUE}}
+# 对于 NAME:{BY:VALUE} ，可能有子字典PRECONDITION:list=[{BY:VALUE}]
+# NAME: { PRECONDITON: {BY:VALUE}, BY:VALUE}
 
 LOGIN_METHODS = [
     {
@@ -48,9 +53,6 @@ LOGIN_METHODS = [
     }
 ]
 
-
 BROWSER_USER_PROFILE_PATH_F = {
     "chrome": "C:\\Users\\{}\\AppData\\Local\\Google\\Chrome\\User Data"
-
 }
-
