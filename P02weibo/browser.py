@@ -72,6 +72,9 @@ class Browser:
             self.driver.quit()
             self.driver = None
 
+    def __del__(self):
+        self.close()
+
 
 class ChromeBrowser(Browser):
     """ChromeSelenium的封装，提供启动、配置等功能。"""
@@ -99,11 +102,12 @@ class ChromeBrowser(Browser):
             self.options.add_argument("profile-directory=Default")
         elif self.profile == 'test':
             test_path = os.path.join('test', 'profile')
-            os.makedirs(test_path,exist_ok=True)
+            os.makedirs(test_path, exist_ok=True)
             self.options.add_argument('user-data-dir=' + os.path.abspath(test_path))
 
     def use_headless(self):
         self.options.add_argument("--headless")
+
     def start(self):
         if not self.driver:
             try:
