@@ -27,7 +27,7 @@ class XlsWriter(object):
         self.save_file()
         self._entered = False  # 重置标志
         if exc_type:
-            raise RuntimeError("An error occurred while working with the Excel file")
+            raise
 
     def _ensure_entered(self):
         """确保已通过上下文管理器进入实例"""
