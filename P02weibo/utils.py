@@ -20,12 +20,16 @@ def read_cookie_from_file(file_path):
             return cookie_dict
     except FileNotFoundError:
         return None
+    except json.decoder.JSONDecodeError:
+        return None
 
 
 def save_element_content_to_file(element, file_path):
     content = etree.tostring(element, pretty_print=True, encoding='utf-8')
     if not file_path.endswith('.html'):
         file_path += '.html'
+    if isinstance(content, bytes):
+        content = content.decode('utf-8')
     with open(file_path, 'w', encoding='utf-8') as file:
         file.write(content)
         file.close()
