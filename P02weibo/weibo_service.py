@@ -75,6 +75,7 @@ class WeiboCookieService(ChromeBrowser):
                 print("已登录")
                 return True
 
+        # 二维码登录
         if use_qr_code:
             feature_dict = method.get(QRCODE)
             element = self.find_element_by_dict(feature_dict)
@@ -85,7 +86,7 @@ class WeiboCookieService(ChromeBrowser):
             show_image_by_url(img_url, event)
             print("已显示图片")
             try:
-                # 等待直到URL变为特定值
+                # 等待直到URL变为weibo.com 或者 weibo.com/u/
                 pattern = r".*weibo\.com/(u/)?$"
                 WebDriverWait(self.driver, 120).until(EC.url_matches(pattern))
                 event.set()

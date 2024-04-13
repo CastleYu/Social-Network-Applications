@@ -1,6 +1,8 @@
 from selenium.webdriver.common.by import By
 
 DOC = "微博登录方法"
+# 单次获取的时间步长，博主
+STEP = 5
 
 # MAP, 映射变量名与字符串
 URL = "url"
@@ -13,7 +15,7 @@ PRECONDITION = "precondition_click"
 # 登录方法(list)，格式为：每项{URL+NAME:{BY:VALUE}}
 # 对于 NAME:{BY:VALUE} ，可能有子字典PRECONDITION:list=[{BY:VALUE}]
 # NAME: { PRECONDITON: {BY:VALUE}, BY:VALUE}
-
+# 只有表层是 NAME
 LOGIN_METHODS = [
     {
         URL: "https://weibo.com/login.php",
@@ -50,6 +52,14 @@ LOGIN_METHODS = [
         LOGIN_NAME: {
 
         }
+    }
+    ,
+    {
+        URL: "https://passport.weibo.com/sso/signin?url=https%3A%2F%2Fs.weibo.com%2F",
+        LOGIN_NAME: {
+
+        },
+
     }
 ]
 
