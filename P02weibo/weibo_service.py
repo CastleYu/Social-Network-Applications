@@ -1,13 +1,12 @@
-from selenium.common import NoSuchElementException, TimeoutException
+from selenium.common import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
 
 from browser import *
 from config import *
 from utils import *
 
 
-class WeiboService(ChromeBrowser):
+class WeiboCookieService(ChromeBrowser):
     def __init__(self, profile='test'):
         super().__init__(profile)
 
@@ -18,6 +17,7 @@ class WeiboService(ChromeBrowser):
                 try:
                     elem = self.driver.find_element(by, value)
                     try:
+                        elem.click()
                         elem.click()
                         return True
                     except Exception as e:
@@ -34,6 +34,7 @@ class WeiboService(ChromeBrowser):
             raise KeyError("There is a precondition click, but no element founded")
 
     def find_element_by_dict(self, feature_dict: dict):
+        """根据{By:Value}获取到目标元素"""
         # 处理前置条件点击，并且记录Flag-是否处理预点击队列
         precondition = feature_dict.pop(PRECONDITION, None)
         if precondition:
@@ -54,11 +55,6 @@ class WeiboService(ChromeBrowser):
             else:
                 raise KeyError("No element founded, and no precondition click")
 
-    # def monitor_page_change(self, initial_url='', to_be_url=''):
-    #     if initial_url and to_be_url:
-    #         return ValueError('Provide both initial_url and to_be_url')
-    #     pass
-
     def login(self, username=None, password=None, use_qr_code=True):
         success = False
         index = 0
@@ -70,7 +66,15 @@ class WeiboService(ChromeBrowser):
         method = LOGIN_METHODS[index]
         url = method.get(URL)
         self.get(url)
-        WebDriverWait(self.driver, 5).until(EC.url_contains("weibo.com/login"))
+        try:
+            WebDriverWait(self.driver, 5).until(EC.url_contains("weibo.com/login"))
+        except TimeoutException as e:
+            print("未跳转")
+            if self.get_current_url().endswith('weibo.com/'):
+                print("已登录")
+                return True
+
+        # 二维码登录
         if use_qr_code:
             feature_dict = method.get(QRCODE)
             element = self.find_element_by_dict(feature_dict)
@@ -79,9 +83,11 @@ class WeiboService(ChromeBrowser):
             img_url = element.get_attribute('src')
             event = threading.Event()
             show_image_by_url(img_url, event)
+            print("已显示图片")
             try:
-                # 等待直到URL变为特定值
-                WebDriverWait(self.driver, 120).until(EC.url_contains("weibo.com/u/"))
+                # 等待直到URL变为weibo.com 或者 weibo.com/u/
+                pattern = r".*weibo\.com/(u/.*)?$"
+                WebDriverWait(self.driver, 120).until(EC.url_matches(pattern))
                 event.set()
                 return True
             except TimeoutException:
@@ -90,3 +96,8 @@ class WeiboService(ChromeBrowser):
         else:
             raise Exception("由于验证码机制和安全性考虑，暂不启用账户密码登录")
         return False
+
+
+class WeiboService:
+    def __init__(self):
+        self.content = None
