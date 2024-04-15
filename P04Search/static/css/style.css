@@ -111,9 +111,9 @@ th {
     border: 1px solid #ddd;
     transition: background-color 0.3s ease;
 }
-
-.pagination li.active a,
-.pagination li a:hover {
+.active,
+.pagination li.active,
+.pagination li:hover {
     background-color: #009688;
     color: white;
 }
@@ -127,4 +127,8 @@ th {
     .form-horizontal {
         width: 100%;
     }
+}
+.container {
+    display: flex;
+    flex-direction: row-reverse; /* 这会使子元素的顺序反转 */
 }

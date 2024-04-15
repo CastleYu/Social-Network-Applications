@@ -43,43 +43,70 @@
 </div>
 
 <div>
-    <table id="moview-result-list-table" border="1" cellspacing="1" cellpadding="1">
+    <table id="weibo-result-list-table" border="1" cellspacing="1" cellpadding="1">
         <tr>
-            <th>ID</th>
-            <th>电影名称</th>
-            <th>导演</th>
-            <th>演员</th>
-            <th>简介</th>
+            <th>博主昵称</th>
+            <th>博主主页</th>
+            <th>微博内容</th>
+            <th>发布时间</th>
+            <th>微博来源</th>
+            <th>转发</th>
+            <th>评论</th>
+            <th>赞</th>
         </tr>
         {% for data in data_list %}
-            <tr class="movie-entry" id="{{ data.id }}">
-                <td>{{ data.id }}</td>
-                <td>{{ data.movie_title }}</td>
-                <td>{{ data.movie_directors }}</td>
-                <td>{{ data.movie_actors }}</td>
-                <td>{{ data.movie_description }}</td>
+            <tr class="weibo-entry" id="{{ data.id }}">
+                <td>{{ data.blogger_nickname }}</td>
+                <td><a href="{{ data.blogger_homepage }}">{{ data.blogger_homepage }}</a></td>
+                <td>{{ data.weibo_content }}</td>
+                <td>{{ data.publish_time }}</td>
+                <td>{{ data.weibo_source }}</td>
+                <td>{{ data.repost_count }}</td>
+                <td>{{ data.comment_count }}</td>
+                <td>{{ data.like_count }}</td>
             </tr>
         {% endfor %}
     </table>
-    <ul class="pagination">
-        {% if page_object.has_previous %}
-            <li>
-                <a href="?page={{ page_object.previous_page_number }}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
-            </li>
-        {% endif %}
-        {% for pg in page_object.paginator.page_range %}
-            {% if page_object.number == pg %}
-                <li class="active"><a href="?page={{ pg }}">{{ pg }}</a></li>
-            {% else %}
-                <li><a href="?page={{ pg }}">{{ pg }}</a></li>
+
+    <div>
+        <ul class="pagination">
+            <!-- Link to the first page -->
+            {% if page_object.number != 1 %}
+                <li><a href="?page=1">&laquo; 第一页</a></li>
             {% endif %}
-        {% endfor %}
-        {% if page_object.has_next %}
-            <li>
-                <a href="?page={{ page_object.next_page_number }}" aria-label="Next"><span
-                        aria-hidden="true">&raquo;</span></a></li>
-        {% endif %}
-    </ul>
+
+            <!-- Link to the previous page -->
+            {% if page_object.has_previous %}
+                <li>
+                    <a href="?page={{ page_object.previous_page_number }}" aria-label="Previous">上一页</a>
+                </li>
+            {% endif %}
+
+            <!-- Links to individual pages around the current page -->
+            {% for num in page_object.paginator.page_range %}
+                {% if num > page_object.number|add:-3 and num < page_object.number|add:3 %}
+                    {% if num == page_object.number %}
+                        <li class="active"><a href="?page={{ num }}">{{ num }}</a></li>
+                    {% else %}
+                        <li><a href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+
+            <!-- Link to the next page -->
+            {% if page_object.has_next %}
+                <li>
+                    <a href="?page={{ page_object.next_page_number }}" aria-label="Next">下一页</a>
+                </li>
+            {% endif %}
+
+            <!-- Link to the last page -->
+            {% if page_object.number != page_object.paginator.num_pages %}
+                <li><a href="?page={{ page_object.paginator.num_pages }}">最后一页 &raquo;</a></li>
+            {% endif %}
+        </ul>
+    </div>
+
 </div>
 </body>
 </html>

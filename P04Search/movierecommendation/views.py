@@ -10,13 +10,13 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from movierecommendation.models import DoubanMovie, DoubanMovieIndex
+from movierecommendation.models import *
 
 
 # 定义推荐页面.
 def douban_recommendation(request):
-    movie_list = DoubanMovie.objects.all().order_by('id')  # 取出DoubanMoview表所有数据并排序
-    paginator = Paginator(movie_list, 3)  # 3是每页显示的数量，把数据库取出的数据生成paginator对象，并指定每页显示的数量
+    weibo_list = WeiboEntry.objects.all().order_by('id')  # 取出DoubanMoview表所有数据并排序
+    paginator = Paginator(weibo_list, 3)  # 3是每页显示的数量，把数据库取出的数据生成paginator对象，并指定每页显示的数量
     page = request.GET.get('page')  # 从查询字符串获取page的当前页数
     data_list = []
     if page:  # 判断：获取当前页码的数据集，这样在模版就可以针对当前的数据集进行展示
@@ -42,6 +42,13 @@ def buildindex(request):
         'status': 404,
         'text': 'Unknown request!'
     }
+    if request == 'submit2index':
+        # TODO 此处添加中文分词和建立索引的代码
+        res = {
+            'status': 200,
+            "text": inverted_index
+        }
+        return HttpResponse(json.dumps(res), content_type='application/json')
     if request.method == 'POST':
         name = request.POST['id']
         if name == 'submit2index':
