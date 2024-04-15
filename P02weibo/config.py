@@ -1,8 +1,8 @@
 from selenium.webdriver.common.by import By
 
 DOC = "微博登录方法"
-# 单次获取的时间步长，博主
-STEP = 5
+# 单次获取的时间步长，博主越知名值越小，最低为0
+STEP = 0
 
 # MAP, 映射变量名与字符串
 URL = "url"

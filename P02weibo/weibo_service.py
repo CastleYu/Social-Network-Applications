@@ -1,6 +1,5 @@
-from selenium.common import NoSuchElementException, TimeoutException
+from selenium.common import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
 
 from browser import *
 from config import *
@@ -87,7 +86,7 @@ class WeiboCookieService(ChromeBrowser):
             print("已显示图片")
             try:
                 # 等待直到URL变为weibo.com 或者 weibo.com/u/
-                pattern = r".*weibo\.com/(u/)?$"
+                pattern = r".*weibo\.com/(u/.*)?$"
                 WebDriverWait(self.driver, 120).until(EC.url_matches(pattern))
                 event.set()
                 return True

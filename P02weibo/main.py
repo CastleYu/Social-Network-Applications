@@ -104,7 +104,11 @@ if __name__ == "__main__":
                     "timescope": f"custom:{former_date.strftime("%Y-%m-%d")}:{current_date.strftime("%Y-%m-%d")}"
                 }
                 url = 'https://s.weibo.com/weibo'
-                resp = requests.get(url, params=param, cookies=cookie)
+                try:
+                    resp = requests.get(url, params=param, cookies=cookie)
+                except requests.exceptions.RequestException as e:
+                    print("网络连接出现问题:{e}")
+                    continue
 
                 # 检查 cookie 是否失效
                 try:

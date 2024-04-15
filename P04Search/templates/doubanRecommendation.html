@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    {% load static %}
+    <link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css"/>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js" type="text/javascript"></script>
+    <script src="{% static 'js/LYC_search.js' %}"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>微博检索机</title>
+</head>
+<body>
+<h1>微博数据检索机</h1>
+<div class="container">
+    <!-- Search Row -->
+    <div class="row">
+        <div class="col">
+            <form id="lycformsearch" action="" method="get" role="form">
+                <div class="form-group">
+                    <div class="input-group" style="max-width: 500px;">
+                        <input type="search" id="submit2search" name="submit2search" class="form-control"
+                               placeholder="检索" style="max-width: 350px;" value=""/>
+                        <button id="btn-submit2search" name="btn-submit2search"
+                                type="submit" class="btn btn-success" style="max-width: 150px;">检索
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Index and Other Buttons Row -->
+    <div class="row" style="margin-top: 20px;">
+        <div class="col">
+            <form id="lycform" action="" method="post" role="form">
+                <div class="form-group">
+                    <input id="submit2index" name="submit2index" type="submit"
+                           class="btn btn-success" value="新建索引" style="max-width: 500px;">
+                    <button type="button" class="btn btn-primary" style="max-width: 240px;">其他按钮1</button>
+                    <button type="button" class="btn btn-secondary" style="max-width: 240px;">其他按钮2</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div>
+    <table id="moview-result-list-table" border="1" cellspacing="1" cellpadding="1">
+        <tr>
+            <th>ID</th>
+            <th>电影名称</th>
+            <th>导演</th>
+            <th>演员</th>
+            <th>简介</th>
+        </tr>
+        {% for data in data_list %}
+            <tr class="movie-entry" id="{{ data.id }}">
+                <td>{{ data.id }}</td>
+                <td>{{ data.movie_title }}</td>
+                <td>{{ data.movie_directors }}</td>
+                <td>{{ data.movie_actors }}</td>
+                <td>{{ data.movie_description }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <ul class="pagination">
+        {% if page_object.has_previous %}
+            <li>
+                <a href="?page={{ page_object.previous_page_number }}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
+            </li>
+        {% endif %}
+        {% for pg in page_object.paginator.page_range %}
+            {% if page_object.number == pg %}
+                <li class="active"><a href="?page={{ pg }}">{{ pg }}</a></li>
+            {% else %}
+                <li><a href="?page={{ pg }}">{{ pg }}</a></li>
+            {% endif %}
+        {% endfor %}
+        {% if page_object.has_next %}
+            <li>
+                <a href="?page={{ page_object.next_page_number }}" aria-label="Next"><span
+                        aria-hidden="true">&raquo;</span></a></li>
+        {% endif %}
+    </ul>
+</div>
+</body>
+</html>
