@@ -1,5 +1,6 @@
 import json
 import os
+import pprint
 import re
 
 import jieba
@@ -16,7 +17,7 @@ from movierecommendation.models import *
 # 定义推荐页面.
 def douban_recommendation(request):
     weibo_list = WeiboEntry.objects.all().order_by('id')  # 取出DoubanMoview表所有数据并排序
-    paginator = Paginator(weibo_list, 3)  # 3是每页显示的数量，把数据库取出的数据生成paginator对象，并指定每页显示的数量
+    paginator = Paginator(weibo_list, 10)  # 3是每页显示的数量，把数据库取出的数据生成paginator对象，并指定每页显示的数量
     page = request.GET.get('page')  # 从查询字符串获取page的当前页数
     data_list = []
     if page:  # 判断：获取当前页码的数据集，这样在模版就可以针对当前的数据集进行展示
@@ -35,6 +36,23 @@ def douban_recommendation(request):
     })
 
 
+def wr_cls(obj):
+    if isinstance(obj, dict):
+        data = dict(obj)
+    else:
+        data = obj.__dict__
+
+    # 创建 PrettyPrinter 对象
+    pp = pprint.PrettyPrinter(indent=4, width=40, depth=2)
+
+    # 使用 pformat 获取格式化的字符串
+    formatted_data = pp.pformat(data)
+
+    # 将格式化的数据写入文件
+    with open('output.txt', 'w') as file:
+        file.write(formatted_data)
+
+
 # 定义索引请求链接.
 @csrf_exempt
 def buildindex(request):
@@ -42,21 +60,14 @@ def buildindex(request):
         'status': 404,
         'text': 'Unknown request!'
     }
-    if request == 'submit2index':
-        # TODO 此处添加中文分词和建立索引的代码
-        res = {
-            'status': 200,
-            "text": inverted_index
-        }
-        return HttpResponse(json.dumps(res), content_type='application/json')
+
     if request.method == 'POST':
         name = request.POST['id']
         if name == 'submit2index':
-            # 初始化停用词列表
-            # 注意：从网上下载一个较为全面完整的stopwords.txt用于本次任务。此处只是一个简单的示例文件
+            # 初始化停用词列表 load Stopwords
             stopwords = []
-            static_filepath = os.path.join(settings.STATIC_ROOT, 'refs')
-            file_path = os.path.join(static_filepath, 'stopwords.txt')
+            static_filepath = os.path.join(settings.STATIC_ROOT, 'resources')
+            file_path = os.path.join(static_filepath, 'cn_stopwords.txt')
             for word in open(file_path, encoding='utf-8'):
                 stopwords.append(word.strip())
             # 获取所有电影的文本属性用于索引

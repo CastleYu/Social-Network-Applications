@@ -27,7 +27,7 @@
             </form>
         </div>
     </div>
-    <!-- Index and Other Buttons Row -->
+    <!-- Functional Buttons Row -->
     <div class="row" style="margin-top: 20px;">
         <div class="col">
             <form id="lycform" action="" method="post" role="form">
@@ -46,7 +46,6 @@
     <table id="weibo-result-list-table" border="1" cellspacing="1" cellpadding="1">
         <tr>
             <th>博主昵称</th>
-            <th>博主主页</th>
             <th>微博内容</th>
             <th>发布时间</th>
             <th>微博来源</th>
@@ -56,8 +55,7 @@
         </tr>
         {% for data in data_list %}
             <tr class="weibo-entry" id="{{ data.id }}">
-                <td>{{ data.blogger_nickname }}</td>
-                <td><a href="{{ data.blogger_homepage }}">{{ data.blogger_homepage }}</a></td>
+                <td width="200px"><a href="{{ data.blogger_homepage }}">{{ data.blogger_nickname }}</a></td>
                 <td>{{ data.weibo_content }}</td>
                 <td>{{ data.publish_time }}</td>
                 <td>{{ data.weibo_source }}</td>
