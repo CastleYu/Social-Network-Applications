@@ -1,1 +1,1 @@
-{'id': ['submit2index']}
+{'id': ['create_new_index']}

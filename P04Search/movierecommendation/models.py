@@ -14,6 +14,15 @@ class DoubanMovie(models.Model):
         return self.movie_title
 
 
+# 创建索引表
+class DoubanMovieIndex(models.Model):
+    movie_keyword = models.CharField(max_length=256)
+    movie_doclist = models.TextField()
+
+    def __str__(self):
+        return self.movie_keyword
+
+
 class WeiboEntry(models.Model):
     blogger_nickname = models.CharField(max_length=150, verbose_name="博主昵称")
     blogger_homepage = models.URLField(verbose_name="博主主页")
@@ -32,10 +41,13 @@ class WeiboEntry(models.Model):
         return self.blogger_nickname
 
 
-# 创建索引表
-class DoubanMovieIndex(models.Model):
-    movie_keyword = models.CharField(max_length=256)
-    movie_doclist = models.TextField()
+class WeiboEntryIndex(models.Model):
+    keyword = models.CharField(max_length=256, verbose_name="关键词")
+    doclist = models.TextField(verbose_name="文档列表")
+
+    class Meta:
+        verbose_name = "微博索引"
+        verbose_name_plural = "微博索引"
 
     def __str__(self):
-        return self.movie_keyword
+        return self.keyword
