@@ -1,33 +1,4 @@
-body {
-    color: black;
-    background: lightblue;
-    padding: 0 5em;
-    margin: 0
-}
-
-h1 {
-    padding: 1em 1em;
-    background: lightyellow;
-}
-
-p {
-    margin: 1em 0;
-}
-
-ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    width: auto;
-}
-
-ul li {
-    float: right;
-    margin-top: 10px;
-    border: 1px solid;
-}
-
-/* 主体样式 */
+/* 基本样式设置 */
 body {
     font-family: 'MiSans', Helvetica, Arial, sans-serif;
     line-height: 1.6;
@@ -38,25 +9,44 @@ body {
 }
 
 h1 {
+    padding: 1em;
+    background: lightyellow;
     color: #00695c;
     text-align: center;
 }
 
-/* 表单和按钮样式 */
-.form-horizontal {
-    max-width: 600px;
-    margin: 20px auto;
+/* 列表样式 */
+ul {
+    list-style: none;
+    padding: 0;
+    width: auto;
 }
 
-.input[type=search] {
-    margin: 10px 0;
-    border: 1px solid #ddd;
+ul li {
+    float: right;
+    margin-top: 10px;
+    border: 1px solid;
+}
+
+/* 输入框和按钮样式 */
+.input-group {
+    max-width: 500px;
+    margin: 10px auto;
+}
+
+.input-group input[type="search"],
+.input-group button {
     padding: 10px;
-    width: calc(100% - 22px); /* 修正padding和border产生的宽度 */
-    box-sizing: border-box; /* 让width包括padding和border */
+    box-sizing: border-box;
 }
 
-.button[] {
+.input-group input[type="search"] {
+    border: 1px solid #ddd;
+    width: calc(70% - 22px);
+}
+
+.input-group button {
+    width: 30%;
     cursor: pointer;
     background-color: #26a69a;
     border: none;
@@ -64,7 +54,7 @@ h1 {
     transition: background-color 0.3s ease;
 }
 
-input[type=button]:hover {
+.input-group button:hover {
     background-color: #00796b;
 }
 
@@ -76,61 +66,97 @@ table {
     margin: 20px 0;
 }
 
-th, td {
-    text-align: left;
+table th, table td {
     padding: 10px;
     border-bottom: 1px solid #ddd;
 }
 
-th {
+table th {
     background-color: #009688;
     color: white;
 }
 
-.movie-entry:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-/* 分页样式 */
+/* 分页导航样式 */
 .pagination {
-    list-style: none;
-    text-align: center;
+    display: flex;
+    justify-content: center;
     padding: 0;
 }
 
 .pagination li {
-    display: inline;
-    margin: 5px;
+    margin: 0 5px;
 }
 
 .pagination li a {
     text-decoration: none;
-    display: block;
     color: #009688;
     padding: 10px 20px;
-    transition: background-color 0.3s ease;
 }
 
-.active,
-.pagination li.active,
-.pagination li:hover {
+.pagination li.active a,
+.pagination li:hover a {
+    color: white;
     background-color: #009688;
+}
+
+/* Container and Rows */
+.container {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.row {
+    margin-bottom: 20px;
+}
+
+/* Form and Input Group */
+.search-form,
+.index-form {
+    max-width: 500px;
+    margin: auto;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.search-input,
+.index-button,
+.extra-button {
+    flex-grow: 1;
+    margin: 5px 0;
+}
+
+.search-input {
+    max-width: 350px;
+    flex-basis: 70%;
+}
+
+.search-button {
+    max-width: 150px;
+    flex-basis: 30%;
+}
+
+/* Buttons */
+.btn-success {
+    background-color: #4CAF50; /* Green */
     color: white;
 }
 
-/* 调整响应式设计 */
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-
-    .form-horizontal {
-        width: 100%;
-    }
+.btn {
+    padding: 10px;
+    border: none;
+    cursor: pointer;
 }
 
-.pagination {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
+.extra-button {
+    max-width: 240px;
+}
+
+button:disabled {
+    color: #aaa; /* 灰色文本 */
+    background-color: #ccc; /* 灰色背景 */
+    cursor: not-allowed; /* 显示不允许的光标 */
 }

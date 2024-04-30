@@ -3,6 +3,7 @@ from datetime import datetime
 import pandas as pd
 from django.core.management import BaseCommand, call_command
 from django.utils.timezone import make_aware
+from tqdm import tqdm
 
 from movierecommendation.models import WeiboEntry
 
@@ -26,7 +27,7 @@ class Command(BaseCommand):
         call_command('automigrate')
         file_path = kwargs['file_path']
         df = pd.read_excel(file_path)
-        for index, row in df.iterrows():
+        for index, row in tqdm(df.iloc[::4].iterrows()):
             WeiboEntry.objects.create(
                 blogger_nickname=row['博主昵称'],
                 blogger_homepage=row['博主主页'],

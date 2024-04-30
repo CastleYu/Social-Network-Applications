@@ -1,56 +1,28 @@
 import json
 import os
-import pprint
 import re
 
 import jieba
+from Levenshtein import distance as levenshtein_distance
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from tqdm import tqdm
 
-from movierecommendation.models import *
+from movierecommendation.utils import *
 
 
-# 定义推荐页面.
-def douban_recommendation(request):
-    weibo_list = WeiboEntry.objects.all().order_by('id')  # 取出DoubanMoview表所有数据并排序
-    paginator = Paginator(weibo_list, 10)  # 3是每页显示的数量，把数据库取出的数据生成paginator对象，并指定每页显示的数量
-    page = request.GET.get('page')  # 从查询字符串获取page的当前页数
-    data_list = []
-    if page:  # 判断：获取当前页码的数据集，这样在模版就可以针对当前的数据集进行展示
-        data_list = paginator.page(page).object_list
-    else:
-        data_list = paginator.page(1).object_list
-    try:  # 实现分页对象，分别判断当页码存在/不存在的情况，返回当前页码对象
-        page_object = paginator.page(page)
-    except PageNotAnInteger:
-        page_object = paginator.page(1)
-    except EmptyPage:
-        page_object = paginator.page(paginator.num_pages)
-    return render(request, 'doubanRecommendation.html', {
+# 定义推荐页面
+def weibo_recommendation(request):
+    queryset = get_model_data(WeiboEntry)
+    paginator, page_object = paginate_queryset(request, queryset, page_size=10)
+
+    return render(request, 'weiboRecommendation.html', {
         'page_object': page_object,
-        'data_list': data_list
+        'data_list': page_object.object_list
     })
-
-
-def wr_cls(obj):
-    if isinstance(obj, dict):
-        data = dict(obj)
-    else:
-        data = obj.__dict__
-
-    # 创建 PrettyPrinter 对象
-    pp = pprint.PrettyPrinter(indent=4, width=40, depth=2)
-
-    # 使用 pformat 获取格式化的字符串
-    formatted_data = pp.pformat(data)
-
-    # 将格式化的数据写入文件
-    with open('output.txt', 'w') as file:
-        file.write(formatted_data)
 
 
 # 定义索引请求链接.
@@ -63,46 +35,44 @@ def buildindex(request):
 
     if request.method == 'POST':
         name = request.POST['id']
-        if name == 'submit2index':
+        if name == 'create_new_index':
             # 初始化停用词列表 load Stopwords
             stopwords = []
             static_filepath = os.path.join(settings.STATIC_ROOT, 'resources')
-            file_path = os.path.join(static_filepath, 'cn_stopwords.txt')
-            for word in open(file_path, encoding='utf-8'):
+
+            for word in open(os.path.join(static_filepath, 'baidu_stopwords.txt'), encoding='utf-8'):
                 stopwords.append(word.strip())
-            # 获取所有电影的文本属性用于索引
-            movie_list = DoubanMovie.objects.values('id', 'movie_title', 'movie_keywords', 'movie_description')
+            weibo_list = WeiboEntry.objects.values('id', 'weibo_content')
             all_keywords = []
-            movie_set = dict()
-            for movie in movie_list:
-                movie_id = movie['id']
-                text = movie['movie_title'] + movie['movie_keywords'] + movie['movie_description']
+            weibo_set = dict()
+            for weibo in tqdm(weibo_list):
+                weibo_id = weibo['id']
                 # 正则表达式去除非文字和数字的字符
-                movie_text = re.sub(r'[^\w]+', '', text.strip())
-                cut_text = jieba.cut(movie_text, cut_all=False)
+                weibo_text = re.sub(r'[^\w]+', '', weibo['weibo_content'].strip())
+                cut_text = jieba.cut(weibo_text, cut_all=False)
                 keywordlist = []
                 for word in cut_text:
-                    # 此处去停用词
                     if word not in stopwords:
                         keywordlist.append(word)
                 all_keywords.extend(keywordlist)
-                movie_set[movie_id] = keywordlist
+                weibo_set[weibo_id] = keywordlist
             # 利用set删除重复keywords
             set_all_keywords = set(all_keywords)
+            set_all_keywords = list(set_all_keywords)
             # 建立倒排索引
-            for term in set_all_keywords:
+            for term in tqdm(set_all_keywords):
                 temp = []
-                for m_id in movie_set.keys():
-                    cut_text = movie_set[m_id]
+                for w_id in weibo_set.keys():
+                    cut_text = weibo_set[w_id]
                     if term in cut_text:
-                        temp.append(m_id)
+                        temp.append(w_id)
                 # 存储索引到数据库
                 try:
-                    exist_list = DoubanMovieIndex.objects.get(movie_keyword=term)
-                    exist_list.movie_doclist = json.dumps(temp)
+                    exist_list = WeiboEntryIndex.objects.get(keyword=term)
+                    exist_list.doclist = json.dumps(temp)
                     exist_list.save()
                 except ObjectDoesNotExist:
-                    new_list = DoubanMovieIndex(movie_keyword=term, movie_doclist=json.dumps(temp))
+                    new_list = WeiboEntryIndex(keyword=term, doclist=json.dumps(temp))
                     new_list.save()
             res = {
                 'status': 200,
@@ -112,38 +82,73 @@ def buildindex(request):
 
 
 # 定义检索请求链接.
+# def searchindex(request):
+#     res = {
+#         'status': 404,
+#         'text': 'Unknown request!'
+#     }
+#     if request.method == 'GET':
+#         try:
+#             keyword = request.GET['keyword']
+#             invertedindex_rec = WeiboEntryIndex.objects.get(keyword=keyword)
+#             result = json.loads(invertedindex_rec.doclist)
+#             result_queryset = WeiboEntry.objects.filter(id__in=result).values('blogger_nickname', 'weibo_content',
+#                                                                               'publish_time', 'weibo_source',
+#                                                                               'repost_count', 'comment_count',
+#                                                                               'like_count')
+#             if result_queryset:
+#                 res = {
+#                     'status': 200,
+#                     'text': list(result_queryset)
+#                 }
+#             else:
+#                 res = {
+#                     'status': 201,
+#                     'text': 'No result!'
+#                 }
+#         except ObjectDoesNotExist:
+#             res = {
+#                 'status': 201,
+#                 'text': 'No result!'
+#             }
+#     return HttpResponse(json.dumps(res, cls=JsonEncodeWithDatetime), content_type='application/json')
+
+
 def searchindex(request):
     res = {
         'status': 404,
         'text': 'Unknown request!'
     }
     if request.method == 'GET':
-        name = request.GET['id']
-        if name == 'submit2search':
-            try:
-                # 获取前端的关键词
-                keyword = request.GET['keyword']
-                # 精确匹配索引关键词
-                # 如何实现模糊匹配？
-                invertedindex_rec = DoubanMovieIndex.objects.get(movie_keyword=keyword)
-                # 将文档列表字符串转化成数组
-                jsonDec = json.decoder.JSONDecoder()
-                result = jsonDec.decode(invertedindex_rec.movie_doclist)
-                # 查询电影ID在数组内的数据
-                result_queryset = DoubanMovie.objects.filter(id__in=result).values()
-                if result_queryset:
-                    res = {
-                        'status': 200,
-                        'text': list(result_queryset)
-                    }
-                else:
-                    res = {
-                        'status': 201,
-                        'text': 'No result!'
-                    }
-            except ObjectDoesNotExist:
-                res = {
-                    'status': 201,
-                    'text': 'No result!'
-                }
-    return HttpResponse(json.dumps(res), content_type='application/json')
+        keyword = request.GET.get('keyword', '')
+        min_similarity_threshold = 20  # 相似度阈值设置为20%
+        matches = []
+
+        for index in WeiboEntryIndex.objects.all():
+            max_len = max(len(index.keyword), len(keyword))
+            if max_len == 0:  # 防止除零错误
+                similarity = 0
+            else:
+                similarity = (1 - levenshtein_distance(index.keyword, keyword) / max_len) * 100
+
+            if similarity >= min_similarity_threshold:
+                result = json.loads(index.doclist)
+                queryset = WeiboEntry.objects.filter(id__in=result).values('blogger_nickname', 'weibo_content',
+                                                                           'publish_time', 'weibo_source',
+                                                                           'repost_count', 'comment_count',
+                                                                           'like_count')
+                for item in queryset:
+                    matches.append(item)
+
+        if matches:
+            res = {
+                'status': 200,
+                'text': matches
+            }
+        else:
+            res = {
+                'status': 201,
+                'text': 'No results with sufficient similarity.'
+            }
+
+    return HttpResponse(json.dumps(res, cls=JsonEncodeWithDatetime), content_type='application/json')
