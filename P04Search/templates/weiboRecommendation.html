@@ -4,20 +4,20 @@
     {% load static %}
     <link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css"/>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js" type="text/javascript"></script>
-    <script src="{% static 'js/LYC_search.js' %}"></script>
+    <script src="{% static 'js/navigator.js' %}"></script>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>微博检索机</title>
 </head>
 <body>
 <h1>微博数据检索机</h1>
 <div class="container">
-    <!-- Search Section -->
+    <!-- 搜索栏 -->
     <div class="row search-section">
         <div class="col">
             <form class="search-form" action="" method="get" role="form">
                 <div class="form-group">
                     <div class="input-group search-input-group">
-                        <input id="search" type="search" name="search" class="form-control search-input"
+                        <input id="input_box" type="search" name="search" class="form-control search-input"
                                placeholder="检索"/>
                         <button id="search_btn" type="submit" class="btn btn-success search-button">
                             检索
@@ -27,7 +27,7 @@
             </form>
         </div>
     </div>
-    <!-- Functional Buttons Section -->
+    <!-- 功能按钮 -->
     <div class="row buttons-section">
         <div class="col">
             <form class="index-form" action="" method="post">

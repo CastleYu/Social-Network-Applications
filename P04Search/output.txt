@@ -1,1 +1,0 @@
-{'id': ['create_new_index']}

@@ -149,5 +149,9 @@ def searchindex(request):
                 'status': 201,
                 'text': 'No results with sufficient similarity.'
             }
+        res = {
+            'status': 211,
+            'text': 'No results with sufficient similarity.'
+        }
 
     return HttpResponse(json.dumps(res, cls=JsonEncodeWithDatetime), content_type='application/json')
