@@ -1,0 +1,3 @@
+[submodule "P00Application/social_media_qa_system"]
+	path = P00Application/social_media_qa_system
+	url = https://gitee.com/muziyuc/social_media_qa_system.git
