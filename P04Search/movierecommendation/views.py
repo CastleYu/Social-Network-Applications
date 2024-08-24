@@ -1,4 +1,3 @@
-import json
 import os
 import re
 
@@ -6,12 +5,12 @@ import jieba
 from Levenshtein import distance as levenshtein_distance
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from tqdm import tqdm
 
 from movierecommendation.utils import *
+from universe.quick_http import *
 
 
 # 定义推荐页面
@@ -78,7 +77,7 @@ def buildindex(request):
                 'status': 200,
                 'text': 'Index successfully!'
             }
-    return HttpResponse(json.dumps(res), content_type='application/json')
+    return RespBuilder(res).build()
 
 
 # 定义检索请求链接.
