@@ -86,7 +86,6 @@ if __name__ == "__main__":
     name = ['微博id', '博主昵称', '博主主页', '微博认证', '微博会员', '微博内容', '发布时间', '微博来源', '转发',
             '评论', '赞']
     query_content = input("输入你要搜索的内容:")
-    # query_content = "泛式"
 
     current_date = date(2024, 4, 14)
     items_cnt = 0

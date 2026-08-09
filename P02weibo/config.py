@@ -32,14 +32,14 @@ LOGIN_METHODS = [
 
         },
         QRCODE: {
-            PRECONDITION: [
-                {
-                    By.XPATH: '//*[@id="pl_login_form"]/div/div[1]/div/a[2]',
-                    By.CSS_SELECTOR: '#pl_login_form > div > div.info_header > div > a:nth-child(2)'
-                },
-            ],
+            # PRECONDITION: [
+            #     {
+            #         By.XPATH: '//*[@id="pl_login_form"]/div/div[1]/div/a[2]',
+            #         By.CSS_SELECTOR: '#pl_login_form > div > div.info_header > div > a:nth-child(2)'
+            #     },
+            # ],
             By.XPATH: '//*[@id="pl_login_form"]/div/div[2]/img',
-            By.CSS_SELECTOR: '#pl_login_form > div > div.login_content > img'
+            By.CSS_SELECTOR: '#app > div > div > div.flex.h-full > div.hidden.flex-col.items-center.justify-center.w-82\.5.height-full.border-r.border-line.md\:flex.dark\:border-linedark > div.m-8\.5.relative.border-2.border-line.dark\:border-linedark > div > img'
         }
     },
     {

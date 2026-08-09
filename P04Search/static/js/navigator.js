@@ -129,4 +129,63 @@ $(document).ready(function () {
         }
     })
 
+
+    $(document).on("click", "input.btn-rec", function () {
+        let weibo_id = $(this).attr("id");
+        $.ajax({
+            type: "get",
+            url: "/getrecmendation", // URL需要与你Django视图中的URL匹配
+            data: {
+                "id": weibo_id
+            },
+            dataType: "json",
+            beforeSend: function () {
+                // 设置disabled阻止用户继续点击
+                $(this).attr("disabled", "disabled");
+            },
+            complete: function () {
+                // 请求完成移除 disabled 属性
+                $(this).removeAttr("disabled");
+            },
+            success: function (result) {
+                if (result.status === 200) {
+                    console.log('successful');
+                    var weibo_data = result.data;
+                    var replace_html = '<table id="weibo-result-list-table" border="1" cellspacing="1" cellpadding="1">        <tr>\n' +
+                        '            <th>博主昵称</th>\n' +
+                        '            <th>微博内容</th>\n' +
+                        '            <th>发布时间</th>\n' +
+                        '            <th>微博来源</th>\n' +
+                        '            <th>转发</th>\n' +
+                        '            <th>评论</th>\n' +
+                        '            <th>赞</th>\n' +
+                        '            <th>操作</th>\n' +
+                        '        </tr>' +
+                        '<tr class="weibo-entry" id="' + weibo_data.id + '">'
+                        + '<td width="200px"><a href="' + weibo_data.blogger_homepage + '">' + weibo_data.blogger_nickname + '</a></td>'
+                        + '<td>' + weibo_data.weibo_content + '</td>'
+                        + '<td>' + weibo_data.publish_time + '</td>'
+                        + '<td>' + weibo_data.weibo_source + '</td>'
+                        + '<td>' + weibo_data.repost_count + '</td>'
+                        + '<td>' + weibo_data.comment_count + '</td>'
+                        + '<td>' + weibo_data.like_count + '</td>'
+                        + '<td>'
+                        + '<input id="' + weibo_data.id + '" type="button" class="btn btn-success btn-pos" value="词性标注"/>'
+                        + '<input id="' + weibo_data.id + '" type="button" class="btn btn-success btn-entity" value="实体识别"/>'
+                        + '<input id="' + weibo_data.id + '" type="button" class="btn btn-success btn-rec" value="相关推荐"/>'
+                        + '</td>'
+                        + '</tr>' +
+                        '</table>';
+                    $("#entry-rec").append(replace_html);
+                } else {
+                    alert("No result");
+                }
+            },
+            error: function (jqXHR, textStatus, e) {
+                alert("提交异常：" + e);
+            }
+        });
+    });
+
+
 })

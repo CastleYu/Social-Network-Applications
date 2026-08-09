@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'^$', views.weibo_recommendation),
     url(r'^movieRecommendation', views.weibo_recommendation),
     url(r'^buildindex', views.buildindex),
-    url(r'^searchindex', views.searchindex)
+    url(r'^searchindex', views.searchindex),
+    url(r'^getrecmendation', views.getrecmendation, name='getrecmendation')
 ]
 urlpatterns += staticfiles_urlpatterns()

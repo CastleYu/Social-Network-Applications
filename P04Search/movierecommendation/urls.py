@@ -4,5 +4,8 @@ from movierecommendation import views
 urlpatterns = [
     url(r'^movieRecommendation', views.weibo_recommendation, name='movieRecommendation'),
     url(r'^buildindex', views.buildindex, name='weiboIndex'),
-    url(r'^searchindex', views.searchindex, name='searchIndex')
+    url(r'^searchindex', views.searchindex, name='searchIndex'),
+    url(r'^getrecmendation', views.getrecmendation, name='getrecmendation')
+
 ]
+

@@ -39,7 +39,6 @@
     </div>
 </div>
 
-
 <div>
     <table id="weibo-result-list-table" border="1" cellspacing="1" cellpadding="1">
         <tr>
@@ -50,6 +49,7 @@
             <th>转发</th>
             <th>评论</th>
             <th>赞</th>
+            <th>操作</th>
         </tr>
         {% for data in data_list %}
             <tr class="weibo-entry" id="{{ data.id }}">
@@ -60,6 +60,11 @@
                 <td>{{ data.repost_count }}</td>
                 <td>{{ data.comment_count }}</td>
                 <td>{{ data.like_count }}</td>
+                <td>
+                    <input id="{{ data.id }}" type="button" class="btn btn-success btn-pos" value="词性标注"/>
+                    <input id="{{ data.id }}" type="button" class="btn btn-success btn-entity" value="实体识别"/>
+                    <input id="{{ data.id }}" type="button" class="btn btn-success btn-rec" value="相关推荐"/>
+                </td>
             </tr>
         {% endfor %}
     </table>
@@ -103,6 +108,8 @@
         </ul>
     </div>
 
+</div>
+<div id="entry-rec">
 </div>
 </body>
 </html>

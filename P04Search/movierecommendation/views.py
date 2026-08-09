@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from sentence_transformers import SentenceTransformer, util
 from tqdm import tqdm
 
 from movierecommendation.utils import *
@@ -73,6 +74,7 @@ def buildindex(request):
                 except ObjectDoesNotExist:
                     new_list = WeiboEntryIndex(keyword=term, doclist=json.dumps(temp))
                     new_list.save()
+                    a
             res = {
                 'status': 200,
                 'text': 'Index successfully!'
@@ -149,9 +151,69 @@ def searchindex(request):
                 'status': 201,
                 'text': 'No results with sufficient similarity.'
             }
-        res = {
-            'status': 211,
-            'text': 'No results with sufficient similarity.'
-        }
 
     return HttpResponse(json.dumps(res, cls=JsonEncodeWithDatetime), content_type='application/json')
+
+
+# 定义推荐请求链接.
+@csrf_exempt
+def getrecmendation(request):
+    res = {
+        'status': 404,
+        'text': 'Unknown request!'
+    }
+    if request.method == 'GET':
+        # 获取当前需要推荐的微博ID
+        weibo_id_cur = request.GET.get('id')
+        if weibo_id_cur:
+            try:
+                print('start get_recommendation')
+                weibo_top = None  # 记录top-1的结果，也可以修改代码返回top-k
+                # 获取当前微博数据
+                result = WeiboEntry.objects.get(id=weibo_id_cur)
+                weibo_text = result.weibo_content
+                # 排除当前微博的数据
+                data_list = WeiboEntry.objects.exclude(weibo_content=weibo_text)[:500]
+
+                if data_list:
+
+                    # 使用Bert模型
+                    model_bert = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+
+                    # 计算嵌入
+                    embedding = model_bert.encode(weibo_text, convert_to_tensor=True)
+                    cosine_score_top = -1
+
+                    for data_rec in tqdm(data_list):
+                        rec_embedding = model_bert.encode(data_rec.weibo_content, convert_to_tensor=True)
+                        cosine_scores = util.pytorch_cos_sim(embedding, rec_embedding).item()
+                        if cosine_scores > cosine_score_top:
+                            cosine_score_top = cosine_scores
+                            weibo_top = data_rec
+
+                if weibo_top:
+                    res = {
+                        'status': 200,
+                        'data': {
+                            'id': weibo_top.id,
+                            'blogger_nickname': weibo_top.blogger_nickname,
+                            'blogger_homepage': weibo_top.blogger_homepage,
+                            'weibo_content': weibo_top.weibo_content,
+                            'publish_time': weibo_top.publish_time.strftime('%Y-%m-%d %H:%M:%S'),
+                            'weibo_source': weibo_top.weibo_source,
+                            'repost_count': weibo_top.repost_count,
+                            'comment_count': weibo_top.comment_count,
+                            'like_count': weibo_top.like_count
+                        }
+                    }
+                else:
+                    res = {
+                        'status': 201,
+                        'data': 'No result!'
+                    }
+            except ObjectDoesNotExist:
+                res = {
+                    'status': 201,
+                    'data': 'No result!'
+                }
+    return HttpResponse(json.dumps(res), content_type='application/json')
