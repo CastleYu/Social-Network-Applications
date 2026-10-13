@@ -1,6 +1,6 @@
 lxml~=5.2.2
 openpyxl~=3.1.2
-Django~=5.0.4
+Django~=5.2.17
 jieba~=0.42.1
 Levenshtein~=0.25.1
 tqdm~=4.66.2
